@@ -247,12 +247,7 @@ const App: React.FC = () => {
       {showApiKeyDialog && (
         <ApiKeyDialog onContinue={handleApiKeyDialogContinue} />
       )}
-      <header className="py-6 flex justify-center items-center px-8 relative z-10">
-        <h1 className="text-5xl font-semibold tracking-wide text-center bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-          AdSpark Studio
-        </h1>
-      </header>
-      <main className="w-full max-w-4xl mx-auto flex-grow flex flex-col p-4 overflow-y-auto">
+      <main className="w-full max-w-4xl mx-auto flex-grow flex flex-col p-4 pt-12 overflow-y-auto">
         {appState === AppState.IDLE ? (
           <div className="flex-grow flex flex-col justify-center items-center">
             <div className="w-full text-center mb-8">

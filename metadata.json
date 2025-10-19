@@ -1,5 +1,5 @@
 {
-  "name": "AdSpark Studio",
+  "name": "AI Video Ad Generator",
   "description": "Generate catchy, 6-8 second video ad creatives for any product or service instantly. Uses AI to create humorous, engaging ads optimized for social media.",
   "requestFramePermissions": [
     "microphone"
