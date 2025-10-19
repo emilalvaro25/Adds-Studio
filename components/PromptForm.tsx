@@ -2,18 +2,27 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   AspectRatio,
   GenerateVideoParams,
   ImageFile,
   Resolution,
+  StorableParams,
   VideoModel,
   VoiceName,
 } from '../types';
-import {BookOpenIcon, SparklesIcon, TrashIcon, WandIcon} from './icons';
+import {
+  BookOpenIcon,
+  ClockIcon,
+  SparklesIcon,
+  TrashIcon,
+  WandIcon,
+} from './icons';
 import AudioRecorder from './AudioRecorder';
 import PresetDialog from './PresetDialog';
+import HistoryDialog from './HistoryDialog';
+import {getHistory} from '../services/historyService';
 
 // Helper to convert File to Base64
 const fileToBase64 = (file: File): Promise<string> => {
@@ -27,7 +36,7 @@ const fileToBase64 = (file: File): Promise<string> => {
 
 const defaultParams: Omit<GenerateVideoParams, 'productName' | 'productDescription'> = {
   prompt: '',
-  model: VideoModel.VEO_FAST,
+  model: VideoModel.VEO_HIGH,
   resolution: Resolution.P720,
   aspectRatio: AspectRatio.PORTRAIT,
   autoExtend: false,
@@ -57,6 +66,7 @@ const PromptForm: React.FC<PromptFormProps> = ({
   });
   const [isGeneratingScript, setIsGeneratingScript] = useState(false);
   const [showPresets, setShowPresets] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [imageConstraintMessage, setImageConstraintMessage] = useState<
     string | null
@@ -112,8 +122,7 @@ const PromptForm: React.FC<PromptFormProps> = ({
     setParams((prev) => ({
       ...prev,
       referenceImages: [],
-      // Revert to fast model but keep user's other settings
-      model: VideoModel.VEO_FAST,
+      model: VideoModel.VEO_HIGH,
     }));
     setImageConstraintMessage(null);
   };
@@ -148,6 +157,11 @@ const PromptForm: React.FC<PromptFormProps> = ({
     setShowPresets(false);
   };
 
+  const handleHistorySelect = (selectedParams: StorableParams) => {
+    setParams((prev) => ({...prev, ...selectedParams}));
+    setShowHistory(false);
+  };
+
   const isImageUsed =
     params.referenceImages && params.referenceImages.length > 0;
 
@@ -159,6 +173,13 @@ const PromptForm: React.FC<PromptFormProps> = ({
         <PresetDialog
           onSelect={handlePresetSelect}
           onClose={() => setShowPresets(false)}
+        />
+      )}
+      {showHistory && (
+        <HistoryDialog
+          history={getHistory()}
+          onSelect={handleHistorySelect}
+          onClose={() => setShowHistory(false)}
         />
       )}
       <div className="space-y-4">
@@ -210,16 +231,25 @@ const PromptForm: React.FC<PromptFormProps> = ({
               onChange={handleInputChange}
               rows={4}
               placeholder="Describe the video you want to create. For example: A dramatic slow-motion shot of a cat knocking over a glass of water."
-              className="w-full bg-gray-900 border border-gray-700 rounded-md p-2 pr-28 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full bg-gray-900 border border-gray-700 rounded-md p-2 pr-44 focus:ring-indigo-500 focus:border-indigo-500"
               required
             />
-            <button
-              type="button"
-              onClick={() => setShowPresets(true)}
-              className="absolute top-2 right-2 flex items-center gap-1.5 px-3 py-1.5 text-xs bg-indigo-600 hover:bg-indigo-700 rounded-md font-semibold transition-colors">
-              <BookOpenIcon className="w-4 h-4" />
-              Presets
-            </button>
+            <div className="absolute top-2 right-2 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowHistory(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-600 hover:bg-gray-700 rounded-md font-semibold transition-colors">
+                <ClockIcon className="w-4 h-4" />
+                History
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowPresets(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-indigo-600 hover:bg-indigo-700 rounded-md font-semibold transition-colors">
+                <BookOpenIcon className="w-4 h-4" />
+                Presets
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -326,10 +356,10 @@ const PromptForm: React.FC<PromptFormProps> = ({
             <legend className="text-base font-medium text-gray-200">
               Video Options
             </legend>
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
               {params.inputVideoObject ? (
-                <p className="text-sm text-gray-400 col-span-2">
-                  Extending existing video at 720p.
+                <p className="text-sm text-gray-400 col-span-3">
+                  Extending existing video at 720p. Model and aspect ratio are locked.
                 </p>
               ) : (
                 <>
@@ -371,6 +401,23 @@ const PromptForm: React.FC<PromptFormProps> = ({
                       <option value={AspectRatio.LANDSCAPE}>
                         16:9 (Landscape)
                       </option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="model"
+                      className="block text-sm font-medium text-gray-400">
+                      Model
+                    </label>
+                    <select
+                      id="model"
+                      name="model"
+                      value={params.model}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:opacity-50 disabled:bg-gray-700/50 disabled:cursor-not-allowed"
+                      disabled={isImageUsed}>
+                      <option value={VideoModel.VEO_HIGH}>High Quality</option>
+                      <option value={VideoModel.VEO_FAST}>Fast</option>
                     </select>
                   </div>
                 </>

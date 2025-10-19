@@ -72,3 +72,6 @@ export interface Preset {
   description: string;
   prompt: string;
 }
+
+// A version of GenerateVideoParams that is safe to store in localStorage.
+export type StorableParams = Omit<GenerateVideoParams, 'referenceImages' | 'inputVideo' | 'inputVideoObject' | 'recordedAudioBlob'>;

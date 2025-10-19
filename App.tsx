@@ -9,6 +9,7 @@ import LoadingIndicator from './components/LoadingIndicator';
 import PromptForm from './components/PromptForm';
 import VideoResult from './components/VideoResult';
 import {generateScript, generateSpeech, generateVideo} from './services/geminiService';
+import {saveConfiguration} from './services/historyService';
 import {
   AppState,
   GenerateVideoParams,
@@ -74,6 +75,9 @@ const App: React.FC = () => {
         return;
       }
     }
+
+    // Save the configuration to history
+    saveConfiguration(params);
 
     setAppState(AppState.LOADING);
     setErrorMessage(null);
